@@ -1,0 +1,6 @@
+{
+  "name": "CareSync",
+  "description": "Comprehensive health record app for tracking medical checkups, doctor visits, diagnostic tests, medication logs with voice-to-text, wearable vitals sync, biometric privacy, and PDF report export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

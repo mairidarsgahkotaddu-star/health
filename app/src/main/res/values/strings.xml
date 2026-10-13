@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">CareSync</string>
+    <string name="tagline">Personal Health &amp; Medical Log</string>
+    <string name="tab_overview">Vitals &amp; Trends</string>
+    <string name="tab_checkups">Checkups</string>
+    <string name="tab_medications">Medications</string>
+    <string name="tab_tests">Lab Tests</string>
+    <string name="tab_reports">PCP Report &amp; Sync</string>
+    <string name="voice_input_prompt">Speak clearly to dictate notes...</string>
+    <string name="export_pdf_title">Primary Care Physician Report</string>
+    <string name="biometric_prompt_title">Unlock CareSync</string>
+    <string name="biometric_prompt_subtitle">Confirm identity to access your private medical records</string>
+</resources>
