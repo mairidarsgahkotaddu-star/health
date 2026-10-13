@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "DoctorCheckup": {
+      "path": "users/{userId}/checkups/{checkupId}",
+      "fields": {
+        "doctorName": { "type": "string" },
+        "specialty": { "type": "string" },
+        "clinicOrHospital": { "type": "string" },
+        "checkupDateMillis": { "type": "number" },
+        "diagnosisReason": { "type": "string" },
+        "clinicalNotes": { "type": "string" },
+        "followUpDateMillis": { "type": "number", "optional": true },
+        "followUpReminderSet": { "type": "boolean" },
+        "vitalsSummary": { "type": "string" },
+        "createdAt": { "type": "timestamp" },
+        "updatedAt": { "type": "timestamp" }
+      }
+    },
+    "DiagnosticTest": {
+      "path": "users/{userId}/diagnostic_tests/{testId}",
+      "fields": {
+        "testName": { "type": "string" },
+        "orderedByDoctor": { "type": "string" },
+        "testDateMillis": { "type": "number" },
+        "testCategory": { "type": "string" },
+        "resultDisplayValue": { "type": "string" },
+        "referenceRange": { "type": "string" },
+        "statusFlag": { "type": "string" },
+        "clinicalNotes": { "type": "string" },
+        "createdAt": { "type": "timestamp" },
+        "updatedAt": { "type": "timestamp" }
+      }
+    },
+    "MedicationLog": {
+      "path": "users/{userId}/medications/{medicationId}",
+      "fields": {
+        "medicationName": { "type": "string" },
+        "dosage": { "type": "string" },
+        "frequency": { "type": "string" },
+        "scheduledTimes": { "type": "string" },
+        "prescribingDoctor": { "type": "string" },
+        "instructionsVoiceNotes": { "type": "string" },
+        "isReminderActive": { "type": "boolean" },
+        "lastTakenDateMillis": { "type": "number", "optional": true },
+        "adherenceStreakDays": { "type": "number" },
+        "totalDosesTaken": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "timestamp" },
+        "updatedAt": { "type": "timestamp" }
+      }
+    },
+    "VitalMeasurement": {
+      "path": "users/{userId}/vitals/{vitalId}",
+      "fields": {
+        "timestampMillis": { "type": "number" },
+        "systolicBp": { "type": "number", "optional": true },
+        "diastolicBp": { "type": "number", "optional": true },
+        "heartRateBpm": { "type": "number" },
+        "bloodOxygenSpO2": { "type": "number", "optional": true },
+        "bloodGlucoseMgDl": { "type": "number", "optional": true },
+        "source": { "type": "string" },
+        "note": { "type": "string" },
+        "createdAt": { "type": "timestamp" },
+        "updatedAt": { "type": "timestamp" }
+      }
+    }
+  }
+}

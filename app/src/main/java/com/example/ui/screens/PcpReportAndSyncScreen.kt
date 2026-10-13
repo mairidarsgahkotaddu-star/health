@@ -294,6 +294,116 @@ fun PcpReportAndSyncScreen(
                         }
                     }
 
+                    val currentUser by viewModel.currentUser.collectAsState()
+                    val firebaseSyncMsg by viewModel.firebaseSyncMessage.collectAsState()
+                    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+                    val credManager = remember { androidx.credentials.CredentialManager.create(context) }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Firebase Google Sign-In Status Card
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            if (currentUser != null) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Firebase Firestore Account",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                        Text(
+                                            text = currentUser?.email ?: "Google User",
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = "DB: ai-studio-android-caresync-a7bdbe7b-1892-4912-81ca-71186e6500fd",
+                                            fontSize = 10.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            com.example.util.AuthHelper.signOut(context, credManager, {
+                                                Toast.makeText(context, "Signed out of Firebase", Toast.LENGTH_SHORT).show()
+                                            }, coroutineScope)
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                        ),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.testTag("firebase_sign_out_button")
+                                    ) {
+                                        Text("Sign Out", fontSize = 11.sp)
+                                    }
+                                }
+                            } else {
+                                Column {
+                                    Text(
+                                        text = "Firebase Cloud Database Sync",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp
+                                    )
+                                    Text(
+                                        text = "Sign in to synchronize health records with your secure cloud Firestore database.",
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Button(
+                                        onClick = {
+                                            com.example.util.AuthHelper.onGoogleSignInClicked(
+                                                context = context,
+                                                credentialManager = credManager,
+                                                onAuthSuccess = {
+                                                    Toast.makeText(context, "Signed in with Google! Firestore sync active.", Toast.LENGTH_SHORT).show()
+                                                    viewModel.syncWithCloud()
+                                                },
+                                                onAuthError = { err ->
+                                                    Toast.makeText(context, "Sign in failed: $err", Toast.LENGTH_LONG).show()
+                                                },
+                                                scope = coroutineScope,
+                                                onAuthCancelled = {
+                                                    Toast.makeText(context, "Sign in cancelled", Toast.LENGTH_SHORT).show()
+                                                }
+                                            )
+                                        },
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .testTag("google_sign_in_button")
+                                    ) {
+                                        Icon(imageVector = Icons.Default.CloudDone, contentDescription = null, modifier = Modifier.size(16.dp))
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Sign in with Google", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+
+                            if (firebaseSyncMsg != null) {
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = firebaseSyncMsg ?: "",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF16A34A),
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(

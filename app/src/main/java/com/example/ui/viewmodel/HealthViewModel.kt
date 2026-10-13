@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 
 enum class HealthTab {
     VITALS,
@@ -32,11 +34,25 @@ enum class HealthTab {
 class HealthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: HealthRepository
+    val firestoreSync: com.example.data.remote.FirestoreHealthSync
+    private val firebaseAuth = FirebaseAuth.getInstance()
+
+    private val _currentUser = MutableStateFlow<FirebaseUser?>(null)
+    val currentUser: StateFlow<FirebaseUser?> = _currentUser.asStateFlow()
+
+    private val _firebaseSyncMessage = MutableStateFlow<String?>(null)
+    val firebaseSyncMessage: StateFlow<String?> = _firebaseSyncMessage.asStateFlow()
 
     init {
         val database = HealthDatabase.getDatabase(application, viewModelScope)
         repository = HealthRepository(database.healthDao())
+        firestoreSync = com.example.data.remote.FirestoreHealthSync(application)
         NotificationHelper.createNotificationChannels(application)
+        _currentUser.value = firebaseAuth.currentUser
+
+        firebaseAuth.addAuthStateListener { auth ->
+            _currentUser.value = auth.currentUser
+        }
     }
 
     // Tab Navigation
@@ -171,10 +187,22 @@ class HealthViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             _cloudSyncState.value = CloudSyncManager.SyncState.SYNCING
             try {
-                val timestamp = CloudSyncManager.performCloudSync()
-                _lastCloudSyncTimestamp.value = timestamp
+                if (_currentUser.value != null) {
+                    val syncedCount = firestoreSync.syncLocalDataToFirestore(
+                        checkups = checkups.value,
+                        tests = tests.value,
+                        medications = medications.value,
+                        vitals = vitals.value
+                    )
+                    _firebaseSyncMessage.value = "Synced $syncedCount records to Firestore database"
+                } else {
+                    CloudSyncManager.performCloudSync()
+                    _firebaseSyncMessage.value = "Encrypted local vault synced. Sign in to sync with cloud."
+                }
+                _lastCloudSyncTimestamp.value = System.currentTimeMillis()
                 _cloudSyncState.value = CloudSyncManager.SyncState.SYNCED
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                _firebaseSyncMessage.value = "Sync error: ${e.message}"
                 _cloudSyncState.value = CloudSyncManager.SyncState.PENDING_CHANGES
             }
         }

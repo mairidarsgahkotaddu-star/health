@@ -1,0 +1,85 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidCheckup(data) {
+      return data.doctorName is string && data.doctorName.size() > 0 &&
+             data.specialty is string &&
+             data.clinicOrHospital is string &&
+             data.checkupDateMillis is number &&
+             data.diagnosisReason is string &&
+             data.clinicalNotes is string &&
+             (!('followUpDateMillis' in data) || data.followUpDateMillis == null || data.followUpDateMillis is number) &&
+             data.followUpReminderSet is bool &&
+             data.vitalsSummary is string;
+    }
+
+    function isValidTest(data) {
+      return data.testName is string && data.testName.size() > 0 &&
+             data.orderedByDoctor is string &&
+             data.testDateMillis is number &&
+             data.testCategory is string &&
+             data.resultDisplayValue is string &&
+             data.referenceRange is string &&
+             data.statusFlag is string &&
+             data.clinicalNotes is string;
+    }
+
+    function isValidMedication(data) {
+      return data.medicationName is string && data.medicationName.size() > 0 &&
+             data.dosage is string &&
+             data.frequency is string &&
+             data.scheduledTimes is string &&
+             data.prescribingDoctor is string &&
+             data.instructionsVoiceNotes is string &&
+             data.isReminderActive is bool &&
+             (!('lastTakenDateMillis' in data) || data.lastTakenDateMillis == null || data.lastTakenDateMillis is number) &&
+             data.adherenceStreakDays is number &&
+             data.totalDosesTaken is number &&
+             data.isActive is bool;
+    }
+
+    function isValidVital(data) {
+      return data.timestampMillis is number &&
+             (!('systolicBp' in data) || data.systolicBp == null || data.systolicBp is number) &&
+             (!('diastolicBp' in data) || data.diastolicBp == null || data.diastolicBp is number) &&
+             data.heartRateBpm is number &&
+             (!('bloodOxygenSpO2' in data) || data.bloodOxygenSpO2 == null || data.bloodOxygenSpO2 is number) &&
+             (!('bloodGlucoseMgDl' in data) || data.bloodGlucoseMgDl == null || data.bloodGlucoseMgDl is number) &&
+             data.source is string &&
+             data.note is string;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /checkups/{checkupId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidCheckup(request.resource.data);
+      }
+
+      match /diagnostic_tests/{testId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidTest(request.resource.data);
+      }
+
+      match /medications/{medicationId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidMedication(request.resource.data);
+      }
+
+      match /vitals/{vitalId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidVital(request.resource.data);
+      }
+    }
+  }
+}
